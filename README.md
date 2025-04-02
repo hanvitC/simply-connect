@@ -48,3 +48,21 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+# Project Structure
+
+simply-connect/
+├── app/
+│ ├── \_layout.tsx ← Defines nav layout
+│ ├── login.tsx ← Phone input screen
+│ ├── verify.tsx ← OTP verification
+│ ├── home.tsx ← Post feed
+│ ├── post.tsx ← Upload a photo + caption
+│ ├── friends.tsx ← View connections
+├── components/
+│ ├── PostCard.tsx ← Show individual post
+│ ├── [others if needed]
+├── config/
+│ └── firebase.js ← Firebase setup
+├── constants/
+│ └── Colors.ts ← Your color theme
