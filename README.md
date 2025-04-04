@@ -40,7 +40,7 @@ Join our community of developers creating universal apps.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
 
 # Project Structure
-
+<pre>
 simply-connect/
 ├── app/
 │ ├── \_layout.tsx ← Defines nav layout
@@ -56,3 +56,5 @@ simply-connect/
 │ └── firebase.js ← Firebase setup
 ├── constants/
 │ └── Colors.ts ← Your color theme
+
+</pre>
