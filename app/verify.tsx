@@ -47,8 +47,17 @@ export default function VerifyScreen() {
         if (code === testOTPCode) {
           console.log('Test verification successful');
           
+          // For test users, we need to create a mock user object
+          const mockUser = {
+            uid: phone.replace(/[^a-zA-Z0-9]/g, ''), // Create a clean ID from phone number
+            phoneNumber: phone
+          };
+          
+          // Set the mock user in auth state
+          (window as any).mockUser = mockUser;
+          
           // Check if user exists in Firestore
-          const userRef = doc(db, 'users', phone);
+          const userRef = doc(db, 'users', mockUser.uid);
           const userSnap = await getDoc(userRef);
 
           if (!userSnap.exists()) {
@@ -66,7 +75,13 @@ export default function VerifyScreen() {
             console.log('User already exists in Firestore');
           }
 
-          router.replace('/home');
+          // Ensure auth state is updated before redirecting
+          console.log('Waiting for auth state to update...');
+          setTimeout(() => {
+            console.log('Redirecting to home screen');
+            router.replace('/home');
+          }, 1000);
+          
           return;
         } else {
           throw new Error('Invalid test OTP code');
@@ -90,7 +105,7 @@ export default function VerifyScreen() {
       console.log('User details:', { uid, phoneNumber });
 
       // Check if user exists in Firestore
-      const userRef = doc(db, 'users', phoneNumber);
+      const userRef = doc(db, 'users', uid);
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
@@ -107,7 +122,13 @@ export default function VerifyScreen() {
         console.log('User already exists in Firestore');
       }
 
-      router.replace('/home');
+      // Ensure auth state is updated before redirecting
+      console.log('Waiting for auth state to update...');
+      setTimeout(() => {
+        console.log('Redirecting to home screen');
+        router.replace('/home');
+      }, 1000);
+      
     } catch (error: any) {
       console.error('Detailed verification error:', {
         code: error.code,
