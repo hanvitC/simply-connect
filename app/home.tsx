@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { auth, db } from '../config/firebase';
 import { signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { Post } from '../types/Post';
 import { fetchFeedPosts } from '../services/postService';
 import PostCard from '../components/PostCard';
@@ -34,18 +34,20 @@ export default function Home() {
       if (effectiveUser) {
         setUser(effectiveUser);
         
-        // Get the user ID (either from Firebase auth or mock user)
-        const userId = effectiveUser.uid || effectiveUser.phoneNumber?.replace(/[^a-zA-Z0-9]/g, '');
-        
-        // Fetch user data from Firestore
         try {
-          const userDoc = await getDoc(doc(db, 'users', userId));
-          if (userDoc.exists()) {
+          // First, try to find the user document by phone number
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef, where('phoneNumber', '==', effectiveUser.phoneNumber));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            // User exists, use the existing document
+            const userDoc = querySnapshot.docs[0];
             const data = userDoc.data() as UserData;
             setUserData(data);
             
-            // Fetch posts for the feed
-            const { posts: feedPosts } = await fetchFeedPosts(userId);
+            // Fetch posts for the feed using the document ID
+            const { posts: feedPosts } = await fetchFeedPosts(userDoc.id);
             setPosts(feedPosts);
           } else {
             console.error('User document not found');
@@ -68,10 +70,16 @@ export default function Home() {
     
     setRefreshing(true);
     try {
-      // Get the user ID (either from Firebase auth or mock user)
-      const userId = user.uid || user.phoneNumber?.replace(/[^a-zA-Z0-9]/g, '');
-      const { posts: feedPosts } = await fetchFeedPosts(userId);
-      setPosts(feedPosts);
+      // Find the user document by phone number
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('phoneNumber', '==', user.phoneNumber));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const { posts: feedPosts } = await fetchFeedPosts(userDoc.id);
+        setPosts(feedPosts);
+      }
     } catch (error) {
       console.error('Error refreshing posts:', error);
     } finally {
@@ -81,15 +89,31 @@ export default function Home() {
 
   const handleLogout = async () => {
     try {
-      // Clear mock user if in test mode
-      if ((window as any).mockUser) {
-        (window as any).mockUser = null;
+      setLoading(true);
+      console.log('Attempting to sign out');
+      
+      // Check if we're in test mode
+      const isTest = (window as any).isTest === 'true';
+      
+      if (isTest) {
+        // For test users, just clear the auth state
+        console.log('Clearing test user auth state');
+        (auth as any).currentUser = null;
+        // Trigger auth state change
+        auth.onAuthStateChanged(() => {});
+      } else {
+        // For real users, use Firebase signOut
+        console.log('Signing out with Firebase');
+        await signOut(auth);
       }
       
-      await signOut(auth);
+      console.log('Sign out successful');
       router.replace('/login');
     } catch (error) {
       console.error('Error signing out:', error);
+      Alert.alert('Logout Failed', 'There was an error signing out. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 

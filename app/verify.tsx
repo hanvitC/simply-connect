@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { auth, db } from '../config/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import styles from '../styles/verifyStyles';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export default function VerifyScreen() {
   const router = useRouter();
@@ -37,6 +38,7 @@ export default function VerifyScreen() {
       setLoading(true);
       console.log('Starting verification process');
       console.log('Current code:', code);
+      console.log('Phone number:', phone);
       
       // For test numbers, verify directly
       if (isTest === 'true') {
@@ -47,22 +49,31 @@ export default function VerifyScreen() {
         if (code === testOTPCode) {
           console.log('Test verification successful');
           
-          // For test users, we need to create a mock user object
-          const mockUser = {
-            uid: phone.replace(/[^a-zA-Z0-9]/g, ''), // Create a clean ID from phone number
-            phoneNumber: phone
-          };
-          
-          // Set the mock user in auth state
-          (window as any).mockUser = mockUser;
-          
-          // Check if user exists in Firestore
-          const userRef = doc(db, 'users', mockUser.uid);
-          const userSnap = await getDoc(userRef);
+          // Search for existing user document by phone number
+          console.log('Searching for existing user document by phone number:', phone);
+          const usersRef = collection(db, 'users');
+          const q = query(usersRef, where('phoneNumber', '==', phone));
+          const querySnapshot = await getDocs(q);
 
+          let userRef;
+          if (!querySnapshot.empty) {
+            // User exists, use the existing document ID
+            const existingDoc = querySnapshot.docs[0];
+            userRef = doc(db, 'users', existingDoc.id);
+            console.log('Found existing user document:', {
+              id: existingDoc.id,
+              data: existingDoc.data()
+            });
+          } else {
+            // User doesn't exist, create new document
+            const newUserId = phone.replace(/[^a-zA-Z0-9]/g, ''); // Create a clean ID from phone number
+            userRef = doc(db, 'users', newUserId);
+            console.log('No existing user found, creating new document with ID:', newUserId);
+          }
+
+          const userSnap = await getDoc(userRef);
           if (!userSnap.exists()) {
-            console.log('Creating new test user in Firestore');
-            // Create new user with the same structure as existing users
+            console.log('Creating new user in Firestore');
             await setDoc(userRef, {
               phoneNumber: phone,
               email: '',
@@ -71,17 +82,52 @@ export default function VerifyScreen() {
               profilePhotoUrl: '',
               connections: [''],
             });
+            console.log('New user created in Firestore');
           } else {
             console.log('User already exists in Firestore');
+            console.log('Existing user data:', userSnap.data());
           }
 
-          // Ensure auth state is updated before redirecting
-          console.log('Waiting for auth state to update...');
-          setTimeout(() => {
-            console.log('Redirecting to home screen');
-            router.replace('/home');
-          }, 1000);
+          // For test mode, we can directly set the auth state
+          const testUser = {
+            uid: userRef.id,
+            phoneNumber: phone,
+            email: '',
+            displayName: '',
+            photoURL: '',
+            emailVerified: true,
+            isAnonymous: false,
+            metadata: {
+              creationTime: new Date().toISOString(),
+              lastSignInTime: new Date().toISOString()
+            },
+            // Add necessary Firebase auth methods
+            getIdToken: async () => 'test-token',
+            _stopProactiveRefresh: () => {},
+            _startProactiveRefresh: () => {},
+            delete: async () => {},
+            getIdTokenResult: async () => ({ token: 'test-token' }),
+            reload: async () => {},
+            toJSON: () => ({ uid: userRef.id, phoneNumber: phone })
+          };
           
+          // Set the test user in auth state
+          (auth as any).currentUser = testUser;
+          console.log('Test user set in auth state');
+
+          // Wait for auth state to actually change
+          await new Promise<void>((resolve) => {
+            const unsubscribe = onAuthStateChanged(auth, (user) => {
+              if (user) {
+                console.log('Test auth state updated, user authenticated');
+                unsubscribe();
+                resolve();
+              }
+            });
+          });
+
+          console.log('Redirecting to home screen');
+          router.replace('/home');
           return;
         } else {
           throw new Error('Invalid test OTP code');
@@ -104,10 +150,28 @@ export default function VerifyScreen() {
       const { uid, phoneNumber } = result.user;
       console.log('User details:', { uid, phoneNumber });
 
-      // Check if user exists in Firestore
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
+      // Search for existing user document by phone number
+      console.log('Searching for existing user document by phone number:', phoneNumber);
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where('phoneNumber', '==', phoneNumber));
+      const querySnapshot = await getDocs(q);
 
+      let userRef;
+      if (!querySnapshot.empty) {
+        // User exists, use the existing document ID
+        const existingDoc = querySnapshot.docs[0];
+        userRef = doc(db, 'users', existingDoc.id);
+        console.log('Found existing user document:', {
+          id: existingDoc.id,
+          data: existingDoc.data()
+        });
+      } else {
+        // User doesn't exist, create new document with the auth UID
+        userRef = doc(db, 'users', uid);
+        console.log('No existing user found, creating new document with auth UID:', uid);
+      }
+
+      const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {
         console.log('Creating new user in Firestore');
         await setDoc(userRef, {
@@ -118,16 +182,25 @@ export default function VerifyScreen() {
           profilePhotoUrl: '',
           connections: [''],
         });
+        console.log('New user created in Firestore');
       } else {
         console.log('User already exists in Firestore');
+        console.log('Existing user data:', userSnap.data());
       }
 
-      // Ensure auth state is updated before redirecting
-      console.log('Waiting for auth state to update...');
-      setTimeout(() => {
-        console.log('Redirecting to home screen');
-        router.replace('/home');
-      }, 1000);
+      // Wait for auth state to actually change
+      await new Promise<void>((resolve) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (user) {
+            console.log('Auth state updated, user authenticated');
+            unsubscribe();
+            resolve();
+          }
+        });
+      });
+
+      console.log('Redirecting to home screen');
+      router.replace('/home');
       
     } catch (error: any) {
       console.error('Detailed verification error:', {

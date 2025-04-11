@@ -25,17 +25,17 @@ export default function RootLayout() {
     }
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      // Check for mock user in test mode
-      const mockUser = (window as any).mockUser;
-      const isAuthenticated = user || mockUser;
+      console.log('Auth state changed:', user ? 'User authenticated' : 'No user');
       
       const inAuthGroup = segments[0] === 'login' || segments[0] === 'verify';
 
-      if (!isAuthenticated && !inAuthGroup) {
+      if (!user && !inAuthGroup) {
         // Redirect to login if not authenticated
+        console.log('No user, redirecting to login');
         router.replace('/login');
-      } else if (isAuthenticated && inAuthGroup) {
+      } else if (user && inAuthGroup) {
         // Redirect to home if authenticated and trying to access auth screens
+        console.log('User authenticated, redirecting to home');
         router.replace('/home');
       }
     });
