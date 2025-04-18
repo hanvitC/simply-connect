@@ -1,60 +1,102 @@
-# Welcome to your Expo app 👋
+# Simply Connect - Social Connection App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native mobile app built with Expo and Firebase for connecting people through shared experiences.
 
-## Get started
+## Features
+
+- 📱 Phone number authentication
+- 👥 User profiles and connections
+- 📝 Post creation and sharing
+- 🔔 Activity notifications
+- 🤝 Friend management
+
+## Prerequisites
+
+Before you begin, ensure you have:
+- Node.js (v16 or newer)
+- npm or yarn
+- Expo CLI (`npm install -g expo-cli`)
+- Firebase project credentials
+
+## Environment Setup
+
+1. Clone the repository
+2. Create a `.env` file in the root directory with your Firebase configuration:
+
+```
+FIREBASE_API_KEY=your_api_key_here
+FIREBASE_AUTH_DOMAIN=your_auth_domain_here
+FIREBASE_PROJECT_ID=your_project_id_here
+FIREBASE_STORAGE_BUCKET=your_storage_bucket_here
+FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id_here
+FIREBASE_APP_ID=your_app_id_here
+FIREBASE_MEASUREMENT_ID=your_measurement_id_here
+```
+
+## Getting Started
 
 1. Install dependencies
-
    ```bash
    npm install
    ```
 
 2. Start the app
-
    ```bash
-    npx expo start
+   npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+You can run the app on:
+- iOS Simulator
+- Android Emulator (experimental)
+- Physical device via Expo Go app 
+- Web browser (experimental)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Project Structure
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
-
-# Project Structure
-<pre>
+```
 simply-connect/
-├── app/
-│ ├── \_layout.tsx ← Defines nav layout
-│ ├── login.tsx ← Phone input screen
-│ ├── verify.tsx ← OTP verification
-│ ├── home.tsx ← Post feed
-│ ├── post.tsx ← Upload a photo + caption
-│ ├── friends.tsx ← View connections
-├── components/
-│ ├── PostCard.tsx ← Show individual post
-│ ├── [others if needed]
+├── app/                      # App screens and navigation
+│   ├── _layout.tsx          # Root layout & authentication
+│   ├── index.tsx            # Entry point
+│   ├── (auth)/              # Auth-related screens
+│   │   ├── login.tsx        # Phone input screen
+│   │   └── verify.tsx       # OTP verification
+│   └── (tabs)/              # Main app tabs
+│       ├── home.tsx         # Post feed
+│       ├── friends.tsx      # Connections
+│       ├── post.tsx         # Create post
+│       ├── activity.tsx     # Notifications
+│       └── profile.tsx      # User profile
+├── components/              # Reusable components
+│   ├── PostCard.tsx        # Post display
+│   └── RecaptchaVerifier.tsx # Phone auth component
 ├── config/
-│ └── firebase.js ← Firebase setup
+│   └── firebase.ts         # Firebase configuration
 ├── constants/
-│ └── Colors.ts ← Your color theme
+│   └── Colors.ts           # Theme colors
+├── services/
+│   └── postService.ts      # Post-related operations
+├── styles/                 # Shared styles
+└── types/                  # TypeScript definitions
+```
 
-</pre>
+## Development
+
+- This project uses [Expo Router](https://docs.expo.dev/router/introduction/) for navigation
+- Firebase is used for authentication and data storage
+- TypeScript is used for type safety
+- Follows file-based routing convention
+
+## Learn More
+
+- [Expo Documentation](https://docs.expo.dev/)
+- [Firebase Documentation](https://firebase.google.com/docs)
+- [React Native Documentation](https://reactnative.dev/)
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
