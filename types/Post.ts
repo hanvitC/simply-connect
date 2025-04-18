@@ -4,6 +4,5 @@ export interface Post {
   caption: string;
   imageUrl?: string;
   timestamp: Date;
-  likes?: number;
   comments?: number;
-} 
+}

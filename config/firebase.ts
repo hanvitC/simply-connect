@@ -1,7 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
-import { getAuth, Auth } from 'firebase/auth';
+import { initializeAuth, Auth } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 
@@ -63,7 +63,8 @@ const {
   firebaseMeasurementId,
 } = extra;
 
-const firebaseConfig = {
+// Your web app's Firebase configuration
+export const firebaseConfig = {
   apiKey: firebaseApiKey,
   authDomain: firebaseAuthDomain,
   projectId: firebaseProjectId,
@@ -74,24 +75,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app;
-let auth: Auth;
+const app = initializeApp(firebaseConfig);
 
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  
-  // Note: For React Native, Firebase automatically uses AsyncStorage for persistence
-  // when available. The warning message is just informative and doesn't affect functionality.
-  // The auth state will still persist between sessions.
-  
-  console.log('Firebase initialized successfully');
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-  throw error;
-}
+// For React Native, we don't need to specify persistence explicitly
+// as it's handled by the native SDK
+const auth: Auth = initializeAuth(app);
+
+console.log('Firebase initialized successfully with AsyncStorage persistence');
 
 const db: Firestore = getFirestore(app);
 const storage: FirebaseStorage = getStorage(app);
 
-export { db, auth, storage }; 
+export { db, auth, storage };
+export default app;

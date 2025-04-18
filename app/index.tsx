@@ -1,24 +1,24 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, Animated } from 'react-native';
-import styles from '../styles/splashStyles';
+import { Redirect } from 'expo-router';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { auth } from '../config/firebase';
 
-export default function SplashScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current; // start transparent
-
-  useEffect(() => {
-    // Fade in the title
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000, // 1 second fade
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>
-        Simply Connect
-      </Animated.Text>
-    </View>
-  );
+export default function Index() {
+  // Check if user is logged in
+  const user = auth.currentUser;
+  
+  // Use Redirect component instead of router.replace for safer navigation
+  if (user) {
+    return <Redirect href="/home" />;
+  } else {
+    return <Redirect href="/login" />;
+  }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f8f8',
+  },
+});

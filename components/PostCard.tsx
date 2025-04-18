@@ -5,11 +5,10 @@ import { Post } from '../types/Post';
 
 interface PostCardProps {
   post: Post;
-  onLike: (postId: string) => void;
   onComment: (postId: string) => void;
 }
 
-export default function PostCard({ post, onLike, onComment }: PostCardProps) {
+export default function PostCard({ post, onComment }: PostCardProps) {
   const formatDate = (date: Date) => {
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -45,14 +44,6 @@ export default function PostCard({ post, onLike, onComment }: PostCardProps) {
       )}
 
       <View style={styles.actions}>
-        <TouchableOpacity 
-          style={styles.actionButton} 
-          onPress={() => onLike(post.id)}
-        >
-          <Ionicons name="heart-outline" size={24} color="#333" />
-          <Text style={styles.actionText}>{post.likes || 0}</Text>
-        </TouchableOpacity>
-        
         <TouchableOpacity 
           style={styles.actionButton} 
           onPress={() => onComment(post.id)}

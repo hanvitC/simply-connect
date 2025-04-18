@@ -36,27 +36,33 @@ for (const envVar of requiredEnvVars) {
 
 export default {
   expo: {
-    name: "simply-connect",
-    slug: "simply-connect",
-    version: "1.0.0",
-    orientation: "portrait",
-    icon: "./assets/images/icon.png",
-    scheme: "myapp",
-    userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    name: 'simply-connect',
+    slug: 'simply-connect',
+    version: '1.0.0',
+    orientation: 'portrait',
+    icon: './assets/images/icon.png',
+    scheme: 'myapp',
+    userInterfaceStyle: 'automatic',
+    splash: {
+      image: './assets/images/splash-icon.png',
+      resizeMode: 'contain',
+      backgroundColor: '#ffffff'
+    },
+    assetBundlePatterns: ['**/*'],
     ios: {
-      supportsTablet: true
+      supportsTablet: true,
+      bundleIdentifier: 'com.simplyconnect.app'
     },
     android: {
       adaptiveIcon: {
-        foregroundImage: "./assets/images/adaptive-icon.png",
-        backgroundColor: "#ffffff"
-      }
+        foregroundImage: './assets/images/adaptive-icon.png',
+        backgroundColor: '#ffffff'
+      },
+      package: 'com.simplyconnect.app'
     },
     web: {
-      bundler: "metro",
-      output: "static",
-      favicon: "./assets/images/favicon.png"
+      bundler: 'metro',
+      favicon: './assets/images/favicon.png'
     },
     plugins: [
       "expo-router",
@@ -68,19 +74,32 @@ export default {
           resizeMode: "contain",
           backgroundColor: "#ffffff"
         }
+      ],
+      [
+        "expo-firebase-core",
+        {
+          "projectId": process.env.FIREBASE_PROJECT_ID,
+          "apiKey": process.env.FIREBASE_API_KEY,
+          "messagingSenderId": process.env.FIREBASE_MESSAGING_SENDER_ID,
+          "appId": process.env.FIREBASE_APP_ID,
+          "measurementId": process.env.FIREBASE_MEASUREMENT_ID
+        }
       ]
     ],
     experiments: {
       typedRoutes: true
     },
     extra: {
-      firebaseApiKey: envVars.FIREBASE_API_KEY,
-      firebaseAuthDomain: envVars.FIREBASE_AUTH_DOMAIN,
-      firebaseProjectId: envVars.FIREBASE_PROJECT_ID,
-      firebaseStorageBucket: envVars.FIREBASE_STORAGE_BUCKET,
-      firebaseMessagingSenderId: envVars.FIREBASE_MESSAGING_SENDER_ID,
-      firebaseAppId: envVars.FIREBASE_APP_ID,
-      firebaseMeasurementId: envVars.FIREBASE_MEASUREMENT_ID,
+      firebaseApiKey: process.env.FIREBASE_API_KEY,
+      firebaseAuthDomain: process.env.FIREBASE_AUTH_DOMAIN,
+      firebaseProjectId: process.env.FIREBASE_PROJECT_ID,
+      firebaseStorageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      firebaseMessagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+      firebaseAppId: process.env.FIREBASE_APP_ID,
+      firebaseMeasurementId: process.env.FIREBASE_MEASUREMENT_ID,
+      eas: {
+        projectId: process.env.EAS_PROJECT_ID
+      }
     }
   }
-}; 
+};
